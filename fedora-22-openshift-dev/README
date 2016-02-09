@@ -1,0 +1,10 @@
+
+Assumes openshift source is at 
+
+~/Development/gopath/src/github.com/openshift/origin/
+
+otherwise, should work OOTB
+
+`vagrant up`
+
+
