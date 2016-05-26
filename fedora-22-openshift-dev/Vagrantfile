@@ -9,7 +9,9 @@ Vagrant.configure(2) do |config|
   config.vm.box = "elastic/fedora-23-x86_64"
   config.vm.synced_folder "./", "/vagrant_data"
   config.vm.synced_folder "~/Development/gopath/src/github.com/openshift/origin/", "/origin"
-  config.vm.provision "setup", type: "shell", path: "provision-minimal.sh"
+  config.vm.provision "setup1", type: "shell", path: "provision-minimal.sh"
+  config.vm.provision "setup2", type: "shell", path: "install-openshift.sh"
+
   config.vm.provider "virtualbox" do |vb|
      vb.gui = false
      vb.memory = "6000"

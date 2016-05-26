@@ -42,49 +42,6 @@ function build {
     make clean build
 }
 
-function installOpenShift {
-	cd /origin
-
-     set -x
-	echo "-- Starting build, memory:"
-	free -mh
-	# make clean build
-	echo "Starting openshift"
-	sudo /origin/_output/local/bin/linux/amd64/openshift start --public-master=localhost &> openshift.log &
-	echo "-- Now starting as new user..."
-	#oc logout
-	#yes "j" | oc login
-	echo "-- now checking who i am and creating project!"
-	echo "sleeping to avoid openshift.local... kubeconfig missing error..."
-	sleep 5
-	sudo -u vagrant whoami
-	sudo chmod +r /origin/openshift.local.config/master/openshift-registry.kubeconfig
-	sudo chmod +r /origin/openshift.local.config/master/admin.kubeconfig
-	echo "Creating registry.  Sleeping a while first..."
-	sleep 1
-	/origin/_output/local/bin/linux/amd64/oadm registry --create --credentials=/origin/openshift.local.config/master/openshift-registry.kubeconfig --config=/origin/openshift.local.config/master/admin.kubeconfig
-	echo "now creating project"
-	oc="/origin/_output/local/bin/linux/amd64/oc"
-
-	# warning this project needs to be manually deleted after your first 'vagrant up', or it will persist even after destroying vms.
-	# purge the openshift.local.etcd created on your host.
-	sudo -u vagrant $oc login https://localhost:8443 -u=admin -p=admin --config=/origin/openshift.local.config/master/openshift-registry.kubeconfig
-	#sudo -u vagrant $oc login localhost:8443 -u=admin -p=admin --config=/data/src/github.com/openshift/origin/openshift.local.config/master/openshift-registry.kubeconfig
-	sudo -u vagrant $oc new-project project1 --config=/origin/openshift.local.config/master/openshift-registry.kubeconfig || true
-	
-	echo "Now starting the examples!!!"
-
-	# Make for sure that admin can do things as user vagrant.
-	sudo chmod 755 /origin/openshift.local.config/master/admin.kubeconfig
-	sudo -u vagrant mkdir /home/vagrant/.kube/
-	sudo -u vagrant cp /origin/openshift.local.config/master/admin.kubeconfig /home/vagrant/.kube/config
-	sudo -u vagrant ls /home/vagrant/.kube/
-	sudo -u vagrant $oc login https://localhost:8443 -u=admin -p=admin --insecure-skip-tls-verify=true --config=/home/vagrant/.kube/config && $oc --config=/home/vagrant/.kube/config create -f /origin/examples/image-streams/image-streams-centos7.json -n project1
-
-	sudo -u vagrant $oc get nodes --config=/origin/openshift.local.config/master/admin.kubeconfig
-}
-
 cleanold
 build
 setup
-installOpenShift
